@@ -1,0 +1,888 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}  % Added to handle UTF-8 encoding
+\usepackage[T1]{fontenc}     % Added for better font encoding
+\usepackage[margin=1in]{geometry}
+\usepackage[theorems,algorithms]{textool}  % Load with all features for documentation
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage[toc,page]{appendix}
+
+% Setup for code listings
+\lstset{
+	language=[LaTeX]TeX,
+	basicstyle=\ttfamily\small,
+	commentstyle=\color{green!50!black},
+	keywordstyle=\color{blue},
+	breaklines=true,
+	frame=single,
+	backgroundcolor=\color{gray!10},
+	numbers=left,
+	numberstyle=\tiny\color{gray},
+	escapeinside={(*}{*)}
+}
+
+% Define example environment
+\newtcolorbox{example}{
+	colback=blue!5!white,
+	colframe=blue!75!black,
+	title=Example,
+	fonttitle=\bfseries
+}
+
+\newtcolorbox{warning}{
+	colback=red!5!white,
+	colframe=red!75!black,
+	title=Warning,
+	fonttitle=\bfseries
+}
+
+\newtcolorbox{tip}{
+	colback=green!5!white,
+	colframe=green!75!black,
+	title=Tip,
+	fonttitle=\bfseries
+}
+
+\newtcolorbox{important}{
+	colback=orange!5!white,
+	colframe=orange!75!black,
+	title=Important,
+	fonttitle=\bfseries
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textit{TexTool Package Handbook}}
+\fancyhead[R]{\textit{Version 4.0}}
+\fancyfoot[C]{\thepage}
+
+\title{\Huge\bfseries TexTool Package Handbook\\[0.5em]
+	\Large A Comprehensive LaTeX Package for\\Mathematical Typesetting and Figure Management\\[0.5em]
+	\normalsize Version 4.0 - Robust Edition}
+\author{D.W.\\
+	\texttt{wdong025@ucr.edu}}
+\date{November 2025}
+
+\begin{document}
+	
+	\maketitle
+	\thispagestyle{empty}
+	\newpage
+	
+	\tableofcontents
+	\newpage
+	
+	% ============================================
+	\section{Introduction}
+	% ============================================
+	
+	The \texttt{textool} package is a comprehensive LaTeX package designed to streamline academic writing, particularly in mathematics and technical fields. It provides:
+	
+	\begin{itemize}
+		\item Extensive mathematical symbol libraries with consistent naming conventions
+		\item Simplified figure and multi-figure insertion commands
+		\item Optional theorem environments (opt-in)
+		\item Optional algorithm support (opt-in)
+		\item Enhanced equation formatting tools
+		\item Probability and statistical operators
+		\item Color definitions for presentations
+		\item Robust compatibility with other packages
+	\end{itemize}
+	
+	\subsection{What's New in Version 4.0}
+	
+	\begin{important}
+		Version 4.0 introduces significant changes to improve compatibility and stability:
+		\begin{itemize}
+			\item \textbf{Opt-in model}: Theorems and algorithms are now OFF by default
+			\item \textbf{Enhanced compatibility}: Better conflict resolution with other packages
+			\item \textbf{Tabularx support}: Fixed array package loading for tabularx compatibility
+			\item \textbf{Robust loading}: Conditional checks prevent redefinition conflicts
+		\end{itemize}
+	\end{important}
+	
+	\subsection{Installation}
+	
+	Place \texttt{textool.sty} in your LaTeX project directory or in your local \texttt{texmf} tree. Then load it in your document preamble with the desired options:
+	
+	\begin{lstlisting}
+		% Basic usage (math symbols and figures only)
+		\usepackage{textool}
+		
+		% With theorem environments
+		\usepackage[theorems]{textool}
+		
+		% With algorithm support
+		\usepackage[algorithms]{textool}
+		
+		% With both theorems and algorithms
+		\usepackage[theorems,algorithms]{textool}
+		
+		% Minimal mode (math only, no graphics)
+		\usepackage[minimal]{textool}
+	\end{lstlisting}
+	
+	\subsection{Package Options}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabularx}{\textwidth}{llX}
+			\toprule
+			\textbf{Option} & \textbf{Default} & \textbf{Description} \\
+			\midrule
+			\texttt{theorems} & OFF & Enables theorem environments (theorem, lemma, etc.) \\
+			\texttt{algorithms} & OFF & Enables algorithm and pseudocode support \\
+			\texttt{minimal} & OFF & Loads only core math features, no graphics \\
+			\bottomrule
+		\end{tabularx}
+		\caption{Package options in textool v4.0}
+	\end{table}
+	
+	\subsection{Package Philosophy}
+	
+	The package follows these design principles:
+	\begin{enumerate}
+		\item \textbf{Safety First}: Opt-in model prevents conflicts with user definitions
+		\item \textbf{Consistency}: All symbols follow predictable naming patterns
+		\item \textbf{Simplicity}: Complex tasks require minimal syntax
+		\item \textbf{Compatibility}: Works alongside other standard packages
+		\item \textbf{Completeness}: Provides comprehensive symbol coverage
+		\item \textbf{Robustness}: Conditional loading prevents redefinition errors
+	\end{enumerate}
+	
+	% ============================================
+	\section{Mathematical Symbols}
+	% ============================================
+	
+	\subsection{Symbol Naming Convention}
+	
+	TexTool provides systematic access to mathematical symbols using consistent prefixes:
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{lll}
+			\toprule
+			\textbf{Prefix} & \textbf{Meaning} & \textbf{Example} \\
+			\midrule
+			\texttt{mb} & Blackboard bold & \texttt{\textbackslash mbR} $\rightarrow$ $\mbR$ \\
+			\texttt{ccal} & Calligraphic & \texttt{\textbackslash ccalF} $\rightarrow$ $\ccalF$ \\
+			\texttt{bb} & Bold & \texttt{\textbackslash bbx} $\rightarrow$ $\bbx$ \\
+			\texttt{bbar} & Bar over symbol & \texttt{\textbackslash bbarx} $\rightarrow$ $\bbarx$ \\
+			\texttt{hhat} & Hat over symbol & \texttt{\textbackslash hhatx} $\rightarrow$ $\hhatx$ \\
+			\texttt{td} & Tilde over symbol & \texttt{\textbackslash tdx} $\rightarrow$ $\tdx$ \\
+			\bottomrule
+		\end{tabular}
+		\caption{Symbol prefix conventions}
+	\end{table}
+	
+	\subsection{Blackboard Bold Letters}
+	
+	Used primarily for number sets and spaces:
+	
+	\begin{example}
+		\begin{lstlisting}
+			$\mbR$ % Real numbers
+			$\mbC$ % Complex numbers
+			$\mbN$ % Natural numbers
+			$\mbZ$ % Integers
+			$\mbQ$ % Rational numbers
+			$\mbP$ % Probability space
+		\end{lstlisting}
+	\end{example}
+	
+	Result: $\mbR$, $\mbC$, $\mbN$, $\mbZ$, $\mbQ$, $\mbP$
+	
+	\subsection{Calligraphic Letters}
+	
+	Used for spaces, algebras, and special sets:
+	
+	\begin{example}
+		\begin{lstlisting}
+			$\ccalF$ % Sigma-algebra
+			$\ccalH$ % Hilbert space
+			$\ccalL$ % Linear operators
+			$\ccalM$ % Manifold
+		\end{lstlisting}
+	\end{example}
+	
+	Result: $\ccalF$, $\ccalH$, $\ccalL$, $\ccalM$
+	
+	\subsection{Bold Symbols}
+	
+	For vectors and matrices:
+	
+	\begin{example}
+		\begin{lstlisting}
+			$\bbx \in \mbR^n$ % Vector x
+			$\bbA \bbx = \bbb$ % Matrix equation
+			$\bbalpha, \bbbeta, \bbgamma$ % Bold Greek
+		\end{lstlisting}
+	\end{example}
+	
+	Result: $\bbx \in \mbR^n$, $\bbA \bbx = \bbb$, $\bbalpha, \bbbeta, \bbgamma$
+	
+	\subsection{Decorated Symbols}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabularx}{\textwidth}{lXl}
+			\toprule
+			\textbf{Command} & \textbf{Description} & \textbf{Output} \\
+			\midrule
+			\texttt{\textbackslash bbarX} & Bar over X & $\bbarX$ \\
+			\texttt{\textbackslash hhatX} & Hat over X & $\hhatX$ \\
+			\texttt{\textbackslash tdX} & Tilde over X & $\tdX$ \\
+			\texttt{\textbackslash bbarx} & Bar over x & $\bbarx$ \\
+			\texttt{\textbackslash hhatx} & Hat over x & $\hhatx$ \\
+			\texttt{\textbackslash tdx} & Tilde over x & $\tdx$ \\
+			\texttt{\textbackslash bbargamma} & Bar over gamma & $\bbargamma$ \\
+			\texttt{\textbackslash hhattheta} & Hat over theta & $\hhattheta$ \\
+			\texttt{\textbackslash tdsigma} & Tilde over sigma & $\tdsigma$ \\
+			\bottomrule
+		\end{tabularx}
+		\caption{Decorated symbol examples}
+	\end{table}
+	
+	% ============================================
+	\section{Probability and Statistics}
+	% ============================================
+	
+	\subsection{Expectation Operators}
+	
+	TexTool provides multiple expectation notations:
+	
+	\begin{example}
+		\begin{lstlisting}
+			$\E{X}$          % E[X]
+			$\Ec{X}$         % E(X) with parentheses
+			$\Eb{X^2}$       % E with big brackets
+			$\EB{X^2}$       % E with Big brackets
+			$\EE{Y}{X|Y}$    % E_Y[X|Y] conditional expectation
+		\end{lstlisting}
+	\end{example}
+	
+	Result: $\E{X}$, $\Ec{X}$, $\Eb{X^2}$, $\EB{X^2}$, $\EE{Y}{X|Y}$
+	
+	\subsection{Probability Operators}
+	
+	\begin{example}
+		\begin{lstlisting}
+			$\Pr{X > 0}$     % P[X > 0]
+			$\Prc{A \cup B}$ % P(A union B) with parentheses
+			$\Pb{X = k}$     % P with big brackets
+			$\PP{X}{Y|X}$    % P_X[Y|X] with subscript
+		\end{lstlisting}
+	\end{example}
+	
+	Result: $\Pr{X > 0}$, $\Prc{A \cup B}$, $\Pb{X = k}$, $\PP{X}{Y|X}$
+	
+	\subsection{Statistical Functions}
+	
+	\begin{example}
+		\begin{lstlisting}
+			$\Var{X}$              % Variance
+			$\Covp{X}{Y}$          % Covariance
+			$\ind{x > 0}$          % Indicator function
+			$\Ind{A}$              % Alternative indicator
+			$\Ent{X}$              % Entropy H[X]
+			$\KL{P}{Q}$            % KL divergence
+			$\MI{X}{Y}$            % Mutual information
+		\end{lstlisting}
+	\end{example}
+	
+	Result: $\Var{X}$, $\Covp{X}{Y}$, $\ind{x > 0}$, $\Ind{A}$, $\Ent{X}$, $\KL{P}{Q}$, $\MI{X}{Y}$
+	
+	% ============================================
+	\section{Figure Management}
+	% ============================================
+	
+	\begin{important}
+		Figure commands are available by default unless you use the \texttt{minimal} option.
+	\end{important}
+	
+	\subsection{Single Figures}
+	
+	TexTool simplifies figure insertion with brace-based syntax:
+	
+	\begin{example}
+		\begin{lstlisting}
+			% Basic figure (80% width)
+			\fig{{image.png},{Caption text},{label}}
+			
+			% Custom width figure
+			\figw[0.6]{{image.png},{Caption text},{label}}
+			
+			% Exact placement figure
+			\figH{{image.png},{Caption text},{label}}
+			
+			% Figure without caption
+			\fignc{{image.png},{label}}
+		\end{lstlisting}
+	\end{example}
+	
+	\begin{tip}
+		Labels are automatically prefixed with \texttt{fig:}, so you reference them as \texttt{\textbackslash ref\{fig:label\}}
+	\end{tip}
+	
+	\subsection{Multi-Figure Grids}
+	
+	TexTool supports grid layouts from 1$\times$2 up to 4$\times$4:
+	
+	\subsubsection{2$\times$2 Grid Example}
+	
+	\begin{lstlisting}
+		\mcfigTwoByTwo{{Overall caption},{main-label}}
+		{{img1.png},{Caption 1},{label1}}
+		{{img2.png},{Caption 2},{label2}}
+		{{img3.png},{Caption 3},{label3}}
+		{{img4.png},{Caption 4},{label4}}
+	\end{lstlisting}
+	
+	\subsubsection{Available Grid Commands}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{ll}
+			\toprule
+			\textbf{Command} & \textbf{Grid Layout} \\
+			\midrule
+			\texttt{\textbackslash mcfigOneByTwo} & 1$\times$2 (2 images) \\
+			\texttt{\textbackslash mcfigTwoByTwo} & 2$\times$2 (4 images) \\
+			\bottomrule
+		\end{tabular}
+		\caption{Multi-figure grid commands (partial list)}
+	\end{table}
+	
+	\begin{tip}
+		The package provides many more grid layouts. Check the source code for the complete list of available \texttt{mcfig} commands.
+	\end{tip}
+	
+	\subsection{Spacing Control}
+	
+	Adjust spacing in multi-figure layouts:
+	
+	\begin{lstlisting}
+		\setSubfigTopSkip{10pt}    % Space above figures
+		\setSubfigBottomSkip{5pt}  % Space between rows
+		\setSubfigCapSkip{3pt}     % Space below captions
+	\end{lstlisting}
+	
+	% ============================================
+	\section{Theorem Environments (Optional)}
+	% ============================================
+	
+	\begin{warning}
+		\textbf{Theorem environments are OFF by default in v4.0!}\\
+		You must explicitly enable them with \texttt{\textbackslash usepackage[theorems]\{textool\}}
+	\end{warning}
+	
+	\subsection{Enabling Theorems}
+	
+	To use theorem environments, you must load the package with the \texttt{theorems} option:
+	
+	\begin{example}
+		\begin{lstlisting}
+			% Enable theorems
+			\usepackage[theorems]{textool}
+			
+			% Or with algorithms too
+			\usepackage[theorems,algorithms]{textool}
+		\end{lstlisting}
+	\end{example}
+	
+	\subsection{Available Environments}
+	
+	When enabled, TexTool provides pre-styled theorem environments:
+	
+	\begin{example}
+		\begin{lstlisting}
+			\begin{theorem}
+				Every continuous function on a compact set is uniformly continuous.
+			\end{theorem}
+			
+			\begin{lemma}
+				If $f$ is differentiable, then $f$ is continuous.
+			\end{lemma}
+			
+			\begin{definition}
+				A set $S$ is \emph{compact} if every open cover has a finite subcover.
+			\end{definition}
+		\end{lstlisting}
+	\end{example}
+	
+	\subsection{Complete List of Theorem Environments}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabularx}{\textwidth}{lX}
+			\toprule
+			\textbf{Environment} & \textbf{Purpose} \\
+			\midrule
+			\texttt{theorem} & Major results \\
+			\texttt{lemma} & Supporting results \\
+			\texttt{proposition} & Standalone statements \\
+			\texttt{corollary} & Direct consequences \\
+			\texttt{definition} & Formal definitions \\
+			\texttt{remark} & Clarifying comments \\
+			\texttt{assumption} & Stated assumptions \\
+			\texttt{observation} & Notable observations \\
+			\texttt{fact} & Known facts \\
+			\texttt{property} & Mathematical properties \\
+			\texttt{test} & Test cases \\
+			\bottomrule
+		\end{tabularx}
+		\caption{Theorem-like environments (when enabled)}
+	\end{table}
+	
+	\subsection{Custom Proof Environment}
+	
+	The \texttt{myproof} environment is always available (doesn't require the \texttt{theorems} option):
+	
+	\begin{example}
+		\begin{lstlisting}
+			\begin{myproof}
+				Let $x \in S$. By assumption...
+				Therefore, the statement holds.
+			\end{myproof}
+			
+			\begin{myproof}[of Theorem 3.1]
+				Using the previous lemma...
+			\end{myproof}
+		\end{lstlisting}
+	\end{example}
+	
+	% ============================================
+	\section{Algorithm Support (Optional)}
+	% ============================================
+	
+	\begin{warning}
+		\textbf{Algorithm support is OFF by default in v4.0!}\\
+		You must explicitly enable it with \texttt{\textbackslash usepackage[algorithms]\{textool\}}
+	\end{warning}
+	
+	\subsection{Enabling Algorithms}
+	
+	To use algorithm environments, load the package with the \texttt{algorithms} option:
+	
+	\begin{example}
+		\begin{lstlisting}
+			% Enable algorithms
+			\usepackage[algorithms]{textool}
+			
+			% The package will load algpseudocode and algorithm
+			% unless algorithmic is already loaded
+		\end{lstlisting}
+	\end{example}
+	
+	\subsection{Compatibility Notes}
+	
+	\begin{important}
+		The package intelligently detects existing algorithm packages:
+		\begin{itemize}
+			\item If \texttt{algorithmic} is already loaded, \texttt{algpseudocode} will be skipped
+			\item If neither is loaded, \texttt{algpseudocode} is preferred
+			\item The \texttt{algorithm} float environment is loaded if available
+		\end{itemize}
+	\end{important}
+	
+	% ============================================
+	\section{Equation Environments}
+	% ============================================
+	
+	\subsection{Standard Equation Helpers}
+	
+	\begin{example}
+		\begin{lstlisting}
+			% Aligned equation with number
+			\feq{
+				f(x) &= x^2 + 2x + 1 \\
+				&= (x + 1)^2
+			}
+			
+			% Aligned equation without number
+			\nfeq{
+				g(x) &= \sin(x) + \cos(x) \\
+				&= \sqrt{2}\sin(x + \pi/4)
+			}
+		\end{lstlisting}
+	\end{example}
+	
+	\subsection{Slide Equation Environments}
+	
+	For presentations and slides:
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabularx}{\textwidth}{lX}
+			\toprule
+			\textbf{Environment} & \textbf{Description} \\
+			\midrule
+			\texttt{slideeq} & Regular equation for slides \\
+			\texttt{nslideeq} & Equation without numbering \\
+			\texttt{sslideeq} & Small size equation \\
+			\texttt{fslideeq} & Footnote size equation \\
+			\texttt{slidealign} & Aligned equations \\
+			\texttt{nslidealign} & Aligned without numbering \\
+			\texttt{sslidealign} & Small aligned equations \\
+			\texttt{fslidealign} & Footnote size aligned \\
+			\bottomrule
+		\end{tabularx}
+	\end{table}
+	
+	% ============================================
+	\section{Color and Formatting}
+	% ============================================
+	
+	\begin{important}
+		Colors and formatting commands are not available in \texttt{minimal} mode.
+	\end{important}
+	
+	\subsection{Predefined Colors}
+	
+	TexTool defines several colors for highlighting:
+	
+	\begin{example}
+		\begin{lstlisting}
+			\red{Error message}
+			\blue{Information}
+			\green{Success}
+			\grey{Disabled text}
+			\highlight{Important}
+			\todo{Remember this}
+		\end{lstlisting}
+	\end{example}
+	
+	\subsection{Arrow Bullets}
+	
+	For itemized lists with arrows:
+	
+	\begin{example}
+		\begin{lstlisting}
+			\begin{itemize}
+				\arritem First point
+				\ai Second point (short form)
+				\item[\darrbullet] Two-way relationship
+			\end{itemize}
+		\end{lstlisting}
+	\end{example}
+	
+	% ============================================
+	\section{List Environments}
+	% ============================================
+	
+	\subsection{Custom List Environment}
+	
+	The \texttt{mylist} environment provides controlled spacing:
+	
+	\begin{example}
+		\begin{lstlisting}
+			\begin{mylist}
+				\item First item with proper spacing
+				\item Second item
+				\item Third item
+			\end{mylist}
+		\end{lstlisting}
+	\end{example}
+	
+	\subsection{Exercise Environment}
+	
+	For homework and exercises:
+	
+	\begin{example}
+		\begin{lstlisting}
+			\exercise{Prove the fundamental theorem of calculus}
+			
+			\exercisepart{State the theorem}
+			The theorem states that...
+			
+			\exercisepart{Provide the proof}
+			We begin by considering...
+			
+			\exercisepart{Give an example}
+			Consider $f(x) = x^2$...
+		\end{lstlisting}
+	\end{example}
+	
+	% ============================================
+	\section{Text Commands}
+	% ============================================
+	
+	\subsection{Mathematical Text}
+	
+	TexTool provides text commands for use in math mode:
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{ll}
+			\toprule
+			\textbf{Command} & \textbf{Output} \\
+			\midrule
+			\texttt{\textbackslash rank} & $\rank$ \\
+			\texttt{\textbackslash diag} & $\diag$ \\
+			\texttt{\textbackslash tr} & $\tr$ (trace) \\
+			\texttt{\textbackslash st} & $\st$ (subject to) \\
+			\texttt{\textbackslash sign} & $\sign$ \\
+			\texttt{\textbackslash argmax} & $\argmax$ \\
+			\texttt{\textbackslash argmin} & $\argmin$ \\
+			\bottomrule
+		\end{tabular}
+	\end{table}
+	
+	\subsection{Section Commands}
+	
+	Custom section formatting:
+	
+	\begin{lstlisting}
+		\mysubsection{Section Title}
+		\mysubsubsection{Subsection Title}
+	\end{lstlisting}
+	
+	% ============================================
+	\section{Advanced Examples}
+	% ============================================
+	
+	\subsection{Complete Mathematical Document}
+	
+	\begin{example}
+		\begin{lstlisting}
+			\documentclass{article}
+			\usepackage[theorems]{textool}  % Enable theorems
+			
+			\begin{document}
+				
+				\begin{theorem}
+					Let $\bbX \in \mbR^{n \times m}$ be a random matrix with 
+					$\E{\bbX} = \bbM$ and $\Var{\bbX_{ij}} = \sigma^2$.
+					Then $\bbarX = \frac{1}{nm}\sum_{i,j} \bbX_{ij}$ 
+					converges to $\tr(\bbM)/nm$ as $n,m \to \infty$.
+				\end{theorem}
+				
+				\begin{myproof}
+					By the law of large numbers, we have
+					\feq{
+						\Pr{\left|\bbarX - \E{\bbarX}\right| > \epsilon} 
+						&\leq \frac{\Var{\bbarX}}{\epsilon^2} \\
+						&= \frac{\sigma^2}{nm\epsilon^2} \to 0
+					}
+					as $n,m \to \infty$.
+				\end{myproof}
+				
+			\end{document}
+		\end{lstlisting}
+	\end{example}
+	
+	\subsection{Using Different Package Options}
+	
+	\begin{example}
+		\begin{lstlisting}
+			% For a math-heavy document without figures
+			\documentclass{article}
+			\usepackage[minimal]{textool}
+			
+			% For a document with theorems but no algorithms
+			\documentclass{article}
+			\usepackage[theorems]{textool}
+			
+			% For a complete document with all features
+			\documentclass{article}
+			\usepackage[theorems,algorithms]{textool}
+			
+			% When using other theorem packages
+			\documentclass{article}
+			\usepackage{amsthm}  % Load your theorem package first
+			\usepackage{textool} % textool won't redefine theorems
+		\end{lstlisting}
+	\end{example}
+	
+	% ============================================
+	\section{Troubleshooting}
+	% ============================================
+	
+	\subsection{Common Issues}
+	
+	\begin{warning}
+		\textbf{Missing Theorem Environments}: In v4.0, theorems are OFF by default. If you get "undefined environment" errors, add the \texttt{theorems} option: \texttt{\textbackslash usepackage[theorems]\{textool\}}
+	\end{warning}
+	
+	\begin{warning}
+		\textbf{Algorithm Package Conflicts}: The package checks for existing algorithm packages. If you need \texttt{algorithmic} instead of \texttt{algpseudocode}, load it before textool.
+	\end{warning}
+	
+	\begin{warning}
+		\textbf{Symbol Conflicts}: If a symbol is already defined by another package, textool will skip that definition. Load textool after other math packages if you prefer its definitions.
+	\end{warning}
+	
+	\begin{warning}
+		\textbf{Tabularx Compatibility}: Version 4.0 loads the \texttt{array} package first to ensure tabularx compatibility.
+	\end{warning}
+	
+	\subsection{Best Practices}
+	
+	\begin{enumerate}
+		\item \textbf{Package Order}: Load \texttt{textool} after basic math packages but before document-specific definitions
+		\item \textbf{Choose Options Carefully}: Only enable features you need (theorems, algorithms)
+		\item \textbf{Minimal Mode}: Use \texttt{minimal} option for documents without figures
+		\item \textbf{Theorem Conflicts}: If using another theorem package, don't enable the \texttt{theorems} option
+		\item \textbf{Check Console Output}: The package prints loading information to help debug issues
+	\end{enumerate}
+	
+	\subsection{Package Loading Messages}
+	
+	When loaded, textool outputs helpful information:
+	
+	\begin{lstlisting}
+		===========================================
+		textool v4.0 Robust Edition loaded
+		Options: theorems=OFF (default), algorithms=OFF (default)
+		Array package loaded for tabularx compatibility
+		For basic use: \usepackage{textool}
+		With theorems: \usepackage[theorems]{textool}
+		===========================================
+	\end{lstlisting}
+	
+	% ============================================
+	\section{Migration Guide from Earlier Versions}
+	% ============================================
+	
+	\subsection{From v1.x to v4.0}
+	
+	If you're upgrading from version 1.x, note these important changes:
+	
+	\begin{important}
+		\textbf{Breaking Changes:}
+		\begin{itemize}
+			\item Theorems are now OFF by default - add \texttt{theorems} option
+			\item Algorithms are now OFF by default - add \texttt{algorithms} option
+			\item Some commands are now conditional to avoid conflicts
+		\end{itemize}
+	\end{important}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabularx}{\textwidth}{XX}
+			\toprule
+			\textbf{Old (v1.x)} & \textbf{New (v4.0)} \\
+			\midrule
+			\texttt{\textbackslash usepackage\{textool\}} 
+			(got everything) & 
+			\texttt{\textbackslash usepackage[theorems,algorithms]\{textool\}}
+			(explicit opt-in) \\
+			\midrule
+			Theorems always loaded & 
+			Theorems only with \texttt{theorems} option \\
+			\midrule
+			Algorithms always loaded & 
+			Algorithms only with \texttt{algorithms} option \\
+			\bottomrule
+		\end{tabularx}
+		\caption{Migration from v1.x to v4.0}
+	\end{table}
+	
+	% ============================================
+	\section{Quick Reference Card}
+	% ============================================
+	
+	\subsection{Most Used Commands}
+	
+	\begin{table}[h]
+		\centering
+		\small
+		\begin{tabularx}{\textwidth}{lX}
+			\toprule
+			\textbf{Category} & \textbf{Common Commands} \\
+			\midrule
+			\textbf{Package Loading} & \texttt{\textbackslash usepackage[options]\{textool\}} \\
+			\textbf{Options} & \texttt{theorems}, \texttt{algorithms}, \texttt{minimal} \\
+			\textbf{Sets} & \texttt{\textbackslash mbR, \textbackslash mbC, \textbackslash mbN, \textbackslash mbZ} \\
+			\textbf{Vectors} & \texttt{\textbackslash bbx, \textbackslash bby, \textbackslash bbA} \\
+			\textbf{Statistics} & \texttt{\textbackslash E\{X\}, \textbackslash Var\{X\}, \textbackslash Pr\{A\}} \\
+			\textbf{Figures} & \texttt{\textbackslash fig\{\{file\},\{caption\},\{label\}\}} \\
+			\textbf{Theorems*} & \texttt{\textbackslash begin\{theorem\}...\textbackslash end\{theorem\}} \\
+			\textbf{Greek} & \texttt{\textbackslash bbalpha, \textbackslash tdbeta, \textbackslash bbargamma} \\
+			\bottomrule
+		\end{tabularx}
+		\caption{Quick reference (* = requires \texttt{theorems} option)}
+	\end{table}
+	
+	% ============================================
+	\appendix
+	\section{Complete Symbol Tables}
+	% ============================================
+	
+	\subsection{All Blackboard Bold Symbols}
+	
+	\begin{center}
+		\begin{tabular}{cccccc}
+			\toprule
+			$\mbA$ & $\mbB$ & $\mbC$ & $\mbD$ & $\mbE$ & $\mbF$ \\
+			$\mbG$ & $\mbH$ & $\mbI$ & $\mbJ$ & $\mbK$ & $\mbL$ \\
+			$\mbM$ & $\mbN$ & $\mbO$ & $\mbP$ & $\mbQ$ & $\mbR$ \\
+			$\mbS$ & $\mbT$ & $\mbU$ & $\mbV$ & $\mbW$ & $\mbX$ \\
+			$\mbY$ & $\mbZ$ & & & & \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	
+	\subsection{All Bold Symbols}
+	
+	\textbf{Uppercase:}
+	\begin{center}
+		\begin{tabular}{cccccc}
+			$\bbA$ & $\bbB$ & $\bbC$ & $\bbD$ & $\bbE$ & $\bbF$ \\
+			$\bbG$ & $\bbH$ & $\bbI$ & $\bbJ$ & $\bbK$ & $\bbL$ \\
+			$\bbM$ & $\bbN$ & $\bbO$ & $\bbP$ & $\bbQ$ & $\bbR$ \\
+			$\bbS$ & $\bbT$ & $\bbU$ & $\bbV$ & $\bbW$ & $\bbX$ \\
+			$\bbY$ & $\bbZ$ & & & & \\
+		\end{tabular}
+	\end{center}
+	
+	\textbf{Lowercase:}
+	\begin{center}
+		\begin{tabular}{cccccc}
+			$\bba$ & $\bbb$ & $\bbc$ & $\bbd$ & $\bbe$ & $\bbf$ \\
+			$\bbg$ & $\bbh$ & $\bbi$ & $\bbj$ & $\bbk$ & $\bbl$ \\
+			$\bbm$ & $\bbn$ & $\bbo$ & $\bbp$ & $\bbq$ & $\bbr$ \\
+			$\bbs$ & $\bbt$ & $\bbu$ & $\bbv$ & $\bbw$ & $\bbx$ \\
+			$\bby$ & $\bbz$ & & & & \\
+		\end{tabular}
+	\end{center}
+	
+	% ============================================
+	\section{Version History}
+	% ============================================
+	
+	\begin{itemize}
+		\item \textbf{Version 1.0}: Initial release
+		\item \textbf{Version 1.1}: Added compatibility checks, made all definitions conditional
+		\item \textbf{Version 2.x}: Added conflict resolution mechanisms
+		\item \textbf{Version 3.0}: Changed to opt-in model for safety
+		\item \textbf{Version 4.0}: 
+		\begin{itemize}
+			\item Fixed tabularx compatibility with array package
+			\item Restored all features from original
+			\item Enhanced robustness
+			\item Improved package option system
+			\item Better conflict detection
+			\item Comprehensive loading messages
+		\end{itemize}
+	\end{itemize}
+	
+	% ============================================
+	\section{License and Contact}
+	% ============================================
+	
+	This package is provided as-is for academic use. For questions, bug reports, or feature requests, please contact the author at the email address provided.
+	
+	The package development follows the principle of maintaining backward compatibility while improving robustness and preventing conflicts with other commonly used packages.
+	
+	\vspace{2cm}
+	\begin{center}
+		\rule{0.5\textwidth}{0.5pt}\\[1em]
+		\textit{End of TexTool Package Handbook v4.0}
+	\end{center}
+	
+\end{document}

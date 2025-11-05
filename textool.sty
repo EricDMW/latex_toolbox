@@ -1,0 +1,1047 @@
+\ProvidesPackage{textool}[2025/11/04 v4.0 Eric's Personal LaTeX Toolbox]
+% ==========================================
+% TEXTOOL PACKAGE v4.0 - Robust Edition
+% ==========================================
+% Author: D.W.
+% v1.0 → v1.1: Added compatibility checks - 2023/10/15
+% v1.1 → v2.x: Added conflict resolution mechanisms - 2023/11/02  
+% v2.x → v3.0: Changed to opt-in model for safety - 2024/01/05
+% v3.0 → v4.0: Fixed tabularx, restored all features, enhanced robustness 2025/11/04
+% Version: 4.0 - Enhanced stability and compatibility
+% Date: 2025/11/04
+%
+% This version includes:
+% - Full tabularx compatibility
+% - Safe theorem/algorithm loading
+% - Complete figure management from original
+% - All mathematical operators and symbols
+% ==========================================
+%          ^ ^
+%           v
+% ==========================================
+
+\makeatletter
+
+% ==========================================
+% PACKAGE OPTIONS
+% ==========================================
+\newif\if@loadtheorems\@loadtheoremsfalse  % DEFAULT: OFF - safer!
+\newif\if@loadalgorithms\@loadalgorithmsfalse  % DEFAULT: OFF - safer!
+\newif\if@minimalmode\@minimalmodefalse
+
+\DeclareOption{theorems}{\@loadtheoremstrue}  % Opt-IN to theorems
+\DeclareOption{algorithms}{\@loadalgorithmstrue}  % Opt-IN to algorithms
+\DeclareOption{minimal}{\@minimalmodetrue}
+\ProcessOptions\relax
+
+% ==========================================
+% CRITICAL: ARRAY PACKAGE FOR TABULARX
+% ==========================================
+% MUST load array first for tabularx compatibility
+\RequirePackage{array}
+
+% ==========================================
+% CORE MATHEMATICS (Always loaded)
+% ==========================================
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{mathtools}
+\RequirePackage{bm}
+
+% ==========================================
+% GRAPHICS AND UTILITIES (Conditional)
+% ==========================================
+\if@minimalmode\else
+% Core graphics
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
+
+% Additional packages with checks
+\@ifpackageloaded{float}{}{%
+	\RequirePackage{float}%
+}
+\@ifpackageloaded{subcaption}{}{%
+	\RequirePackage{subcaption}%
+}
+\@ifpackageloaded{tikz}{}{%
+	\IfFileExists{tikz.sty}{%
+		\RequirePackage{tikz}%
+	}{}%
+}
+\@ifpackageloaded{xparse}{}{%
+	\RequirePackage{xparse}%
+}
+\@ifpackageloaded{calc}{}{%
+	\RequirePackage{calc}%
+}
+\@ifpackageloaded{listings}{}{%
+	\IfFileExists{listings.sty}{%
+		\RequirePackage{listings}%
+	}{}%
+}
+\@ifpackageloaded{siunitx}{}{%
+	\IfFileExists{siunitx.sty}{%
+		\RequirePackage{siunitx}%
+	}{}%
+}
+\fi
+
+% ==========================================
+% THEOREMS - ULTRA SAFE MODE
+% ==========================================
+\if@loadtheorems
+% NEVER load amsthm if already loaded
+\@ifpackageloaded{amsthm}{}{%
+	\RequirePackage{amsthm}%
+}
+
+% ONLY define theorems if they don't exist
+% Use AtBeginDocument to check AFTER user definitions
+\AtBeginDocument{%
+	% Check each theorem environment individually
+	\@ifundefined{theorem}{%
+		\@ifpackageloaded{amsthm}{%
+			\newtheorem{theorem}{Theorem}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{lemma}{%
+		\@ifpackageloaded{amsthm}{%
+			\@ifundefined{c@theorem}{%
+				\newtheorem{lemma}{Lemma}%
+			}{%
+				\newtheorem{lemma}[theorem]{Lemma}%
+			}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{corollary}{%
+		\@ifpackageloaded{amsthm}{%
+			\@ifundefined{c@theorem}{%
+				\newtheorem{corollary}{Corollary}%
+			}{%
+				\newtheorem{corollary}[theorem]{Corollary}%
+			}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{proposition}{%
+		\@ifpackageloaded{amsthm}{%
+			\@ifundefined{c@theorem}{%
+				\newtheorem{proposition}{Proposition}%
+			}{%
+				\newtheorem{proposition}[theorem]{Proposition}%
+			}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{definition}{%
+		\@ifpackageloaded{amsthm}{%
+			\newtheorem{definition}{Definition}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{assumption}{%
+		\@ifpackageloaded{amsthm}{%
+			\newtheorem{assumption}{Assumption}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{remark}{%
+		\@ifpackageloaded{amsthm}{%
+			\newtheorem{remark}{Remark}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{fact}{%
+		\@ifpackageloaded{amsthm}{%
+			\newtheorem{fact}{Fact}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{property}{%
+		\@ifpackageloaded{amsthm}{%
+			\newtheorem{property}{Property}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{observation}{%
+		\@ifpackageloaded{amsthm}{%
+			\newtheorem{observation}{Observation}%
+		}{}%
+	}{}%
+	
+	\@ifundefined{test}{%
+		\@ifpackageloaded{amsthm}{%
+			\newtheorem{test}{Test Case}%
+		}{}%
+	}{}%
+}
+\fi
+
+% ==========================================
+% PROOF ENVIRONMENTS
+% ==========================================
+% Only provide myproof as alternative
+\providecommand{\QED}{\ensuremath{\square}}
+
+% Always safe to define myproof
+\@ifundefined{myproof}{%
+	\newenvironment{myproof}[1][]{%
+		\par\noindent\textbf{Proof\ifx\\#1\\\else~#1\fi:}~\ignorespaces
+	}{%
+		\hfill\QED\par\medskip
+	}%
+}{}
+
+% ==========================================
+% ALGORITHMS - SAFE MODE
+% ==========================================
+\if@loadalgorithms
+% Check for algorithmic first (incompatible with algpseudocode)
+\@ifpackageloaded{algorithmic}{%
+	% algorithmic is loaded, don't load algpseudocode
+	\PackageInfo{textool}{algorithmic detected, skipping algpseudocode}%
+}{%
+	% algorithmic not loaded, safe to try algpseudocode
+	\@ifpackageloaded{algpseudocode}{}{%
+		% Only load if neither is present
+		\@ifpackageloaded{algorithmicx}{}{%
+			\IfFileExists{algpseudocode.sty}{%
+				\RequirePackage{algpseudocode}%
+			}{}%
+		}%
+	}%
+}
+
+% Algorithm package is usually safe
+\@ifpackageloaded{algorithm}{}{%
+	\IfFileExists{algorithm.sty}{%
+		\RequirePackage{algorithm}%
+	}{}%
+}
+\fi
+
+% ==========================================
+% CUSTOM LIST AND FORMATTING
+% ==========================================
+
+% Custom list environment
+\@ifundefined{mylist}{%
+	\newenvironment{mylist}{%
+		\begin{list}{}{%
+				\setlength{\itemsep}{8pt}%
+				\setlength{\parsep}{0pt}%
+				\setlength{\parskip}{0pt}%
+				\setlength{\topsep}{5pt}%
+				\setlength{\partopsep}{0pt}%
+				\setlength{\leftmargin}{0pt}%
+				\setlength{\labelsep}{5pt}%
+				\setlength{\labelwidth}{-5pt}%
+		}}
+		{\end{list}\medskip}%
+}{}
+
+% Exercise environment
+\@ifundefined{c@exercise}{%
+	\newcounter{exercise}%
+	\newcounter{exercisepart}[exercise]%
+}{}
+
+\providecommand{\exercise}[1]{%
+	\refstepcounter{exercise}%
+	\par\medskip
+	\noindent{\bfseries Exercise \theexercise.\ }#1%
+	\par\medskip
+}
+
+\providecommand{\exercisepart}[1]{%
+	\refstepcounter{exercisepart}%
+	\par\medskip
+	\noindent{\itshape \Alph{exercisepart}.\ }#1%
+	\par
+}
+
+% Section formatting
+\providecommand{\mysubsubsection}[1]{%
+	\vspace{0.4cm}\noindent{\bf #1.}\addcontentsline{toc}{subsubsection}{\hspace{0pt}#1}%
+}
+\providecommand{\mysubsection}[1]{%
+	\vspace{0.4cm}\noindent{\bf #1.}\addcontentsline{toc}{subsection}{\hspace{0pt}#1}%
+}
+
+% ==========================================
+% MATHEMATICAL OPERATORS
+% ==========================================
+
+% Expectation and Probability
+\providecommand{\E}[1]{\mathbb{E}\left[#1\right]}
+\providecommand{\Ec}[1]{\mathbb{E}\left(#1\right)}
+\providecommand{\Eb}[1]{\mathbb{E}\big[#1\big]}
+\providecommand{\EB}[1]{\mathbb{E}\Big[#1\Big]}
+\providecommand{\EE}[2]{\mathbb{E}_{#1}\left[#2\right]}
+
+% Probability - check if \Pr exists
+\@ifundefined{Pr}{%
+	\newcommand{\Pr}[1]{\mathbb{P}\left[#1\right]}%
+}{}
+\providecommand{\Prc}[1]{\mathbb{P}\left(#1\right)}
+\providecommand{\Pb}[1]{\mathbb{P}\big[#1\big]}
+\providecommand{\PB}[1]{\mathbb{P}\Big[#1\Big]}
+\providecommand{\PP}[2]{\mathbb{P}_{#1}\left[#2\right]}
+\providecommand{\Prob}[1]{\mathbb{P}\left[#1\right]}
+
+% Variance and Covariance
+\providecommand{\Var}[1]{\mathrm{Var}\left[#1\right]}
+\providecommand{\Varc}[1]{\mathrm{Var}\left(#1\right)}
+\providecommand{\Cov}[2]{\mathrm{Cov}\left[#1, #2\right]}
+\providecommand{\Covp}[2]{\mathrm{Cov}\left[#1, #2\right]}
+
+% Information Theory
+\providecommand{\Ent}[1]{\mathsf{H}\left[#1\right]}
+\providecommand{\KL}[2]{D_{\mathrm{KL}}\left(#1 \parallel #2\right)}
+\providecommand{\MI}[2]{\mathsf{I}\left(#1; #2\right)}
+
+% Indicators
+\providecommand{\ind}[1]{\mathbb{I}\left\{#1\right\}}
+\providecommand{\Ind}[1]{\mathbf{1}\left\{#1\right\}}
+
+% Common operators
+\providecommand{\given}{\,\middle|\,}
+\providecommand{\argmax}{\operatornamewithlimits{argmax}}
+\providecommand{\argmin}{\operatornamewithlimits{argmin}}
+
+% Norms and products
+\providecommand{\norm}[1]{\left\lVert#1\right\rVert}
+\providecommand{\abs}[1]{\left|#1\right|}
+\providecommand{\inner}[2]{\langle#1,#2\rangle}
+
+% Common sets
+\providecommand{\reals}{\mathbb{R}}
+\providecommand{\naturals}{\mathbb{N}}
+\providecommand{\integers}{\mathbb{Z}}
+\providecommand{\rationals}{\mathbb{Q}}
+\providecommand{\complex}{\mathbb{C}}
+
+% Text operators - safe versions
+\providecommand{\st}{\text{\,s.t.\,}}
+\providecommand{\for}{\text{\,for\,}}
+\@ifundefined{rank}{%
+	\DeclareMathOperator{\rank}{rank}%
+}{}
+\@ifundefined{sign}{%
+	\DeclareMathOperator{\sign}{sign}%
+}{}
+\@ifundefined{trace}{%
+	\DeclareMathOperator{\trace}{tr}%
+}{}
+\providecommand{\tr}{\trace}
+\@ifundefined{diag}{%
+	\DeclareMathOperator{\diag}{diag}%
+}{}
+\@ifundefined{eig}{%
+	\DeclareMathOperator{\eig}{eig}%
+}{}
+\providecommand{\cov}{\text{cov}}
+\providecommand{\Cov}{\text{Cov}}
+\providecommand{\ap}{\text{ap}}
+\providecommand{\best}{\text{best}}
+\providecommand{\Co}{\text{Co}}
+\providecommand{\dest}{\text{dest}}
+\providecommand{\ML}{\text{ML}}
+\providecommand{\MLE}{\text{MLE}}
+\providecommand{\ml}{\text{ml}}
+\providecommand{\mse}{\text{mse}}
+
+% Differential operators
+\providecommand{\dd}[1]{\mathrm{d}#1}
+\providecommand{\dv}[2]{\frac{\mathrm{d}#1}{\mathrm{d}#2}}
+\providecommand{\pdv}[2]{\frac{\partial#1}{\partial#2}}
+
+% ==========================================
+% EQUATION ENVIRONMENTS
+% ==========================================
+
+% Standard equations
+\providecommand{\feq}[1]{%
+	\begin{align}
+		\begin{aligned}
+			#1
+		\end{aligned}
+	\end{align}
+}
+
+\providecommand{\nfeq}[1]{%
+	\begin{align}
+		\begin{aligned}
+			#1
+		\end{aligned}\notag
+	\end{align}
+}
+
+% Slide equation environments
+\@ifundefined{slideeq}{%
+	\newenvironment{slideeq}{\begin{equation}}{\end{equation}}%
+}{}
+\@ifundefined{nslideeq}{%
+	\newenvironment{nslideeq}{\begin{equation*}}{\end{equation*}}%
+}{}
+\@ifundefined{sslideeq}{%
+	\newenvironment{sslideeq}{\small\begin{equation*}}{\end{equation*}\normalfont}%
+}{}
+\@ifundefined{fslideeq}{%
+	\newenvironment{fslideeq}{\footnotesize\begin{equation*}}{\end{equation*}\normalfont}%
+}{}
+
+% Slide align environments
+\@ifundefined{slidealign}{%
+	\newenvironment{slidealign}{\begin{align}}{\end{align}}%
+}{}
+\@ifundefined{nslidealign}{%
+	\newenvironment{nslidealign}{\begin{align*}}{\end{align*}}%
+}{}
+\@ifundefined{sslidealign}{%
+	\newenvironment{sslidealign}{\small\begin{align*}}{\end{align*}\normalfont}%
+}{}
+\@ifundefined{fslidealign}{%
+	\newenvironment{fslidealign}{\footnotesize\begin{align*}}{\end{align*}\normalfont}%
+}{}
+
+% ==========================================
+% COLORS (Conditional)
+% ==========================================
+\if@minimalmode\else
+% Define colors safely
+\@ifundefined{c@todo}{%
+	\definecolor{todo}{RGB}{0, 114, 178}%
+}{}
+\@ifundefined{c@temp}{%
+	\definecolor{temp}{gray}{0.9}%
+}{}
+\@ifundefined{c@highlight}{%
+	\definecolor{highlight}{HTML}{FF0000}%
+}{}
+\@ifundefined{c@dm}{%
+	\definecolor{dm}{RGB}{73, 15, 255}%
+}{}
+\@ifundefined{c@pennblue}{%
+	\definecolor{pennblue}{cmyk}{1,0.65,0,0.30}%
+}{}
+\@ifundefined{c@pennred}{%
+	\definecolor{pennred}{cmyk}{0,1,0.65,0.34}%
+}{}
+
+% Color commands
+\providecommand{\todo}[1]{{\color{todo}#1}}
+\providecommand{\temp}[1]{{\color{temp}#1}}
+\providecommand{\highlight}[1]{{\color{highlight}#1}}
+\providecommand{\dm}[1]{{\color{dm}#1}}
+\providecommand{\red}[1]{{\color{red}#1}}
+\providecommand{\blue}[1]{{\color{blue}#1}}
+\providecommand{\grey}[1]{{\color[rgb]{0.80,0.80,0.80}#1}}
+\providecommand{\gray}[1]{{\color[rgb]{0.80,0.80,0.80}#1}}
+\providecommand{\green}[1]{{\color[rgb]{0.10,0.50,0.10}#1}}
+\providecommand{\bulletcolor}[1]{{\color{pennblue}#1}}
+
+% Arrow bullets
+\providecommand{\arrowbullet}{\bulletcolor{$\Rightarrow$}}
+\providecommand{\arrbullet}{\arrowbullet}
+\providecommand{\ab}{\arrowbullet}
+\providecommand{\doublearrow}{\bulletcolor{$\Leftrightarrow$}}
+\providecommand{\darrbullet}{\doublearrow}
+\providecommand{\arritem}{\item[]\quad\arrowbullet}
+\providecommand{\ai}{\arritem}
+\fi
+
+% ==========================================
+% FIGURE COMMANDS (FROM ORIGINAL)
+% ==========================================
+\if@minimalmode\else
+% Helper macro to parse comma-separated parameters
+\def\textool@parsefigparams#1,#2,#3\@nil{%
+	\def\figfilename{#1}%
+	\def\figcaption{#2}%
+	\def\figlabel{#3}%
+}
+
+% Main figure commands
+\providecommand{\fig}[1]{%
+	\expandafter\textool@parsefigparams#1\@nil
+	\begin{figure*}[ht]
+		\centering
+		\includegraphics[width=0.8\textwidth]{\figfilename}
+		\caption{\figcaption}
+		\label{fig:\figlabel}
+	\end{figure*}
+}
+
+\providecommand{\figw}[2][0.8]{%
+	\expandafter\textool@parsefigparams#2\@nil
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=#1\textwidth]{\figfilename}
+		\caption{\figcaption}
+		\label{fig:\figlabel}
+	\end{figure}
+}
+
+\providecommand{\figH}[1]{%
+	\expandafter\textool@parsefigparams#1\@nil
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\textwidth]{\figfilename}
+		\caption{\figcaption}
+		\label{fig:\figlabel}
+	\end{figure}
+}
+
+\providecommand{\fignc}[1]{%
+	\def\textool@parsefigncparams##1,##2\@nil{%
+		\def\figfilename{##1}%
+		\def\figlabel{##2}%
+	}%
+	\expandafter\textool@parsefigncparams#1\@nil
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=0.8\textwidth]{\figfilename}
+		\label{fig:\figlabel}
+	\end{figure}
+}
+
+% Multi-figure environments - settings
+\newlength{\mcfigmargin}
+\setlength{\mcfigmargin}{0.2em}
+\newlength{\mcfigsubwidth}
+\newlength{\mcfigtopskip}
+\setlength{\mcfigtopskip}{2pt}
+\newlength{\mcfigbottomskip}
+\setlength{\mcfigbottomskip}{2pt}
+\newlength{\mcfigcapskip}
+\setlength{\mcfigcapskip}{5pt}
+
+\@ifpackageloaded{subcaption}{%
+	\captionsetup[subfigure]{skip=\mcfigcapskip}%
+}{}
+
+% Helper for main figure parameters
+\def\textool@parsemainfigparams#1,#2\@nil{%
+	\def\mainfigcaption{#1}%
+	\def\mainfiglabel{#2}%
+}
+
+% Helper for subfigure parameters
+\def\textool@parseSubfigParams#1{%
+	\def\subfigfile{}%
+	\def\subfigcaption{}%
+	\def\subfiglabel{}%
+	\def\@tempa{#1}%
+	\expandafter\textool@extractSubfigContent\@tempa\@nil%
+}
+
+\def\textool@extractSubfigContent#1,#2,#3\@nil{%
+	\def\subfigfile{#1}%
+	\def\subfigcaption{#2}%
+	\def\subfiglabel{#3}%
+}
+
+% Multi-figure commands
+\@ifpackageloaded{subcaption}{%
+	\ProvideDocumentCommand{\mcfigOneByTwo}{mmm}{%
+		\expandafter\textool@parsemainfigparams#1\@nil%
+		\begin{figure*}[!ht]
+			\centering
+			\vspace{\mcfigtopskip}
+			\setlength{\mcfigsubwidth}{0.48\linewidth}%
+			\textool@parseSubfigParams{#2}%
+			\def\firstfile{\subfigfile}%
+			\def\firstcaption{\subfigcaption}%
+			\def\firstlabel{\subfiglabel}%
+			\textool@parseSubfigParams{#3}%
+			\def\secondfile{\subfigfile}%
+			\def\secondcaption{\subfigcaption}%
+			\def\secondlabel{\subfiglabel}%
+			\begin{subfigure}[t]{\mcfigsubwidth}
+				\centering
+				\includegraphics[width=\linewidth]{\firstfile}%
+				\caption{\firstcaption}%
+				\label{fig:\firstlabel}%
+			\end{subfigure}%
+			\quad
+			\begin{subfigure}[t]{\mcfigsubwidth}
+				\centering
+				\includegraphics[width=\linewidth]{\secondfile}%
+				\caption{\secondcaption}%
+				\label{fig:\secondlabel}%
+			\end{subfigure}%
+			\caption{\mainfigcaption}%
+			\label{fig:\mainfiglabel}%
+		\end{figure*}%
+	}
+	
+	\ProvideDocumentCommand{\mcfigTwoByTwo}{mmmmm}{%
+		\expandafter\textool@parsemainfigparams#1\@nil%
+		\begin{figure*}[!ht]
+			\centering
+			\vspace{\mcfigtopskip}
+			\setlength{\mcfigsubwidth}{0.48\linewidth}%
+			\textool@parseSubfigParams{#2}%
+			\def\firstfile{\subfigfile}%
+			\def\firstcaption{\subfigcaption}%
+			\def\firstlabel{\subfiglabel}%
+			\textool@parseSubfigParams{#3}%
+			\def\secondfile{\subfigfile}%
+			\def\secondcaption{\subfigcaption}%
+			\def\secondlabel{\subfiglabel}%
+			\textool@parseSubfigParams{#4}%
+			\def\thirdfile{\subfigfile}%
+			\def\thirdcaption{\subfigcaption}%
+			\def\thirdlabel{\subfiglabel}%
+			\textool@parseSubfigParams{#5}%
+			\def\fourthfile{\subfigfile}%
+			\def\fourthcaption{\subfigcaption}%
+			\def\fourthlabel{\subfiglabel}%
+			\begin{subfigure}[t]{\mcfigsubwidth}
+				\centering
+				\includegraphics[width=\linewidth]{\firstfile}%
+				\caption{\firstcaption}%
+				\label{fig:\firstlabel}%
+			\end{subfigure}%
+			\quad
+			\begin{subfigure}[t]{\mcfigsubwidth}
+				\centering
+				\includegraphics[width=\linewidth]{\secondfile}%
+				\caption{\secondcaption}%
+				\label{fig:\secondlabel}%
+			\end{subfigure}%
+			\vspace{\mcfigbottomskip}
+			\begin{subfigure}[t]{\mcfigsubwidth}
+				\centering
+				\includegraphics[width=\linewidth]{\thirdfile}%
+				\caption{\thirdcaption}%
+				\label{fig:\thirdlabel}%
+			\end{subfigure}%
+			\quad
+			\begin{subfigure}[t]{\mcfigsubwidth}
+				\centering
+				\includegraphics[width=\linewidth]{\fourthfile}%
+				\caption{\fourthcaption}%
+				\label{fig:\fourthlabel}%
+			\end{subfigure}%
+			\caption{\mainfigcaption}%
+			\label{fig:\mainfiglabel}%
+		\end{figure*}%
+	}
+	
+	\ProvideDocumentCommand{\mcfigsingle}{m}{%
+		\textool@parseSubfigParams{#1}%
+		\begin{figure*}[!ht]
+			\centering
+			\vspace{\mcfigtopskip}
+			\includegraphics[width=0.8\textwidth]{\subfigfile}%
+			\caption{\subfigcaption}%
+			\label{fig:\subfiglabel}%
+		\end{figure*}%
+	}
+}{}
+
+% Spacing adjustment commands
+\ProvideDocumentCommand{\setSubfigTopSkip}{m}{%
+	\setlength{\mcfigtopskip}{#1}%
+}
+\ProvideDocumentCommand{\setSubfigBottomSkip}{m}{%
+	\setlength{\mcfigbottomskip}{#1}%
+}
+\ProvideDocumentCommand{\setSubfigCapSkip}{m}{%
+	\setlength{\mcfigcapskip}{#1}%
+	\@ifpackageloaded{subcaption}{%
+		\captionsetup[subfigure]{skip=#1}%
+	}{}%
+}
+\fi
+
+% ==========================================
+% SYMBOL SHORTCUTS - ALL FROM ORIGINAL
+% ==========================================
+
+% Blackboard bold - Capital
+\def\mbA{{\ensuremath{\mathbb{A}}}}
+\def\mbB{{\ensuremath{\mathbb{B}}}}
+\def\mbC{{\ensuremath{\mathbb{C}}}}
+\def\mbD{{\ensuremath{\mathbb{D}}}}
+\def\mbE{{\ensuremath{\mathbb{E}}}}
+\def\mbF{{\ensuremath{\mathbb{F}}}}
+\def\mbG{{\ensuremath{\mathbb{G}}}}
+\def\mbH{{\ensuremath{\mathbb{H}}}}
+\def\mbI{{\ensuremath{\mathbb{I}}}}
+\def\mbJ{{\ensuremath{\mathbb{J}}}}
+\def\mbK{{\ensuremath{\mathbb{K}}}}
+\def\mbL{{\ensuremath{\mathbb{L}}}}
+\def\mbM{{\ensuremath{\mathbb{M}}}}
+\def\mbN{{\ensuremath{\mathbb{N}}}}
+\def\mbO{{\ensuremath{\mathbb{O}}}}
+\def\mbP{{\ensuremath{\mathbb{P}}}}
+\def\mbQ{{\ensuremath{\mathbb{Q}}}}
+\def\mbR{{\ensuremath{\mathbb{R}}}}
+\def\mbS{{\ensuremath{\mathbb{S}}}}
+\def\mbT{{\ensuremath{\mathbb{T}}}}
+\def\mbU{{\ensuremath{\mathbb{U}}}}
+\def\mbV{{\ensuremath{\mathbb{V}}}}
+\def\mbW{{\ensuremath{\mathbb{W}}}}
+\def\mbX{{\ensuremath{\mathbb{X}}}}
+\def\mbY{{\ensuremath{\mathbb{Y}}}}
+\def\mbZ{{\ensuremath{\mathbb{Z}}}}
+
+% Bold vectors (lowercase)
+\def\bba{{\ensuremath{\mathbf{a}}}}
+\def\bbb{{\ensuremath{\mathbf{b}}}}
+\def\bbc{{\ensuremath{\mathbf{c}}}}
+\def\bbd{{\ensuremath{\mathbf{d}}}}
+\def\bbe{{\ensuremath{\mathbf{e}}}}
+\def\bbf{{\ensuremath{\mathbf{f}}}}
+\def\bbg{{\ensuremath{\mathbf{g}}}}
+\def\bbh{{\ensuremath{\mathbf{h}}}}
+\def\bbi{{\ensuremath{\mathbf{i}}}}
+\def\bbj{{\ensuremath{\mathbf{j}}}}
+\def\bbk{{\ensuremath{\mathbf{k}}}}
+\def\bbl{{\ensuremath{\mathbf{l}}}}
+\def\bbm{{\ensuremath{\mathbf{m}}}}
+\def\bbn{{\ensuremath{\mathbf{n}}}}
+\def\bbo{{\ensuremath{\mathbf{o}}}}
+\def\bbp{{\ensuremath{\mathbf{p}}}}
+\def\bbq{{\ensuremath{\mathbf{q}}}}
+\def\bbr{{\ensuremath{\mathbf{r}}}}
+\def\bbs{{\ensuremath{\mathbf{s}}}}
+\def\bbt{{\ensuremath{\mathbf{t}}}}
+\def\bbu{{\ensuremath{\mathbf{u}}}}
+\def\bbv{{\ensuremath{\mathbf{v}}}}
+\def\bbw{{\ensuremath{\mathbf{w}}}}
+\def\bbx{{\ensuremath{\mathbf{x}}}}
+\def\bby{{\ensuremath{\mathbf{y}}}}
+\def\bbz{{\ensuremath{\mathbf{z}}}}
+\def\bb0{{\ensuremath{\mathbf{0}}}}
+\def\bb1{{\ensuremath{\mathbf{1}}}}
+\def\bbone{{\ensuremath{\mathbf{1}}}}
+\def\bbzero{{\ensuremath{\mathbf{0}}}}
+
+% Bold matrices (uppercase)
+\def\bbA{{\ensuremath{\mathbf{A}}}}
+\def\bbB{{\ensuremath{\mathbf{B}}}}
+\def\bbC{{\ensuremath{\mathbf{C}}}}
+\def\bbD{{\ensuremath{\mathbf{D}}}}
+\def\bbE{{\ensuremath{\mathbf{E}}}}
+\def\bbF{{\ensuremath{\mathbf{F}}}}
+\def\bbG{{\ensuremath{\mathbf{G}}}}
+\def\bbH{{\ensuremath{\mathbf{H}}}}
+\def\bbI{{\ensuremath{\mathbf{I}}}}
+\def\bbJ{{\ensuremath{\mathbf{J}}}}
+\def\bbK{{\ensuremath{\mathbf{K}}}}
+\def\bbL{{\ensuremath{\mathbf{L}}}}
+\def\bbM{{\ensuremath{\mathbf{M}}}}
+\def\bbN{{\ensuremath{\mathbf{N}}}}
+\def\bbO{{\ensuremath{\mathbf{O}}}}
+\def\bbP{{\ensuremath{\mathbf{P}}}}
+\def\bbQ{{\ensuremath{\mathbf{Q}}}}
+\def\bbR{{\ensuremath{\mathbf{R}}}}
+\def\bbS{{\ensuremath{\mathbf{S}}}}
+\def\bbT{{\ensuremath{\mathbf{T}}}}
+\def\bbU{{\ensuremath{\mathbf{U}}}}
+\def\bbV{{\ensuremath{\mathbf{V}}}}
+\def\bbW{{\ensuremath{\mathbf{W}}}}
+\def\bbX{{\ensuremath{\mathbf{X}}}}
+\def\bbY{{\ensuremath{\mathbf{Y}}}}
+\def\bbZ{{\ensuremath{\mathbf{Z}}}}
+
+% Greek bold
+\def\bbalpha{{\boldsymbol{\alpha}}}
+\def\bbbeta{{\boldsymbol{\beta}}}
+\def\bbgamma{{\boldsymbol{\gamma}}}
+\def\bbdelta{{\boldsymbol{\delta}}}
+\def\bbepsilon{{\boldsymbol{\epsilon}}}
+\def\bbvarepsilon{{\boldsymbol{\varepsilon}}}
+\def\bbzeta{{\boldsymbol{\zeta}}}
+\def\bbeta{{\boldsymbol{\eta}}}
+\def\bbtheta{{\boldsymbol{\theta}}}
+\def\bbvartheta{{\boldsymbol{\vartheta}}}
+\def\bbiota{{\boldsymbol{\iota}}}
+\def\bbkappa{{\boldsymbol{\kappa}}}
+\def\bblambda{{\boldsymbol{\lambda}}}
+\def\bblam{{\boldsymbol{\lambda}}}
+\def\bbmu{{\boldsymbol{\mu}}}
+\def\bbnu{{\boldsymbol{\nu}}}
+\def\bbxi{{\boldsymbol{\xi}}}
+\def\bbpi{{\boldsymbol{\pi}}}
+\def\bbrho{{\boldsymbol{\rho}}}
+\def\bbvarrho{{\boldsymbol{\varrho}}}
+\def\bbsigma{{\boldsymbol{\sigma}}}
+\def\bbvarsigma{{\boldsymbol{\varsigma}}}
+\def\bbtau{{\boldsymbol{\tau}}}
+\def\bbupsilon{{\boldsymbol{\upsilon}}}
+\def\bbphi{{\boldsymbol{\phi}}}
+\def\bbvarphi{{\boldsymbol{\varphi}}}
+\def\bbchi{{\boldsymbol{\chi}}}
+\def\bbpsi{{\boldsymbol{\psi}}}
+\def\bbomega{{\boldsymbol{\omega}}}
+
+% Capital Greek bold
+\def\bbGamma{{\boldsymbol{\Gamma}}}
+\def\bbDelta{{\boldsymbol{\Delta}}}
+\def\bbTheta{{\boldsymbol{\Theta}}}
+\def\bbLambda{{\boldsymbol{\Lambda}}}
+\def\bbXi{{\boldsymbol{\Xi}}}
+\def\bbPi{{\boldsymbol{\Pi}}}
+\def\bbSigma{{\boldsymbol{\Sigma}}}
+\def\bbUpsilon{{\boldsymbol{\Upsilon}}}
+\def\bbPhi{{\boldsymbol{\Phi}}}
+\def\bbPsi{{\boldsymbol{\Psi}}}
+\def\bbOmega{{\boldsymbol{\Omega}}}
+
+% Calligraphic (all letters)
+\def\ccalA{{\ensuremath{\mathcal{A}}}}
+\def\ccalB{{\ensuremath{\mathcal{B}}}}
+\def\ccalC{{\ensuremath{\mathcal{C}}}}
+\def\ccalD{{\ensuremath{\mathcal{D}}}}
+\def\ccalE{{\ensuremath{\mathcal{E}}}}
+\def\ccalF{{\ensuremath{\mathcal{F}}}}
+\def\ccalG{{\ensuremath{\mathcal{G}}}}
+\def\ccalH{{\ensuremath{\mathcal{H}}}}
+\def\ccalI{{\ensuremath{\mathcal{I}}}}
+\def\ccalJ{{\ensuremath{\mathcal{J}}}}
+\def\ccalK{{\ensuremath{\mathcal{K}}}}
+\def\ccalL{{\ensuremath{\mathcal{L}}}}
+\def\ccalM{{\ensuremath{\mathcal{M}}}}
+\def\ccalN{{\ensuremath{\mathcal{N}}}}
+\def\ccalO{{\ensuremath{\mathcal{O}}}}
+\def\ccalP{{\ensuremath{\mathcal{P}}}}
+\def\ccalQ{{\ensuremath{\mathcal{Q}}}}
+\def\ccalR{{\ensuremath{\mathcal{R}}}}
+\def\ccalS{{\ensuremath{\mathcal{S}}}}
+\def\ccalT{{\ensuremath{\mathcal{T}}}}
+\def\ccalU{{\ensuremath{\mathcal{U}}}}
+\def\ccalV{{\ensuremath{\mathcal{V}}}}
+\def\ccalW{{\ensuremath{\mathcal{W}}}}
+\def\ccalX{{\ensuremath{\mathcal{X}}}}
+\def\ccalY{{\ensuremath{\mathcal{Y}}}}
+\def\ccalZ{{\ensuremath{\mathcal{Z}}}}
+
+% Hat versions - lowercase
+\def\hhata{{\ensuremath{\hat{a}}}}
+\def\hhatb{{\ensuremath{\hat{b}}}}
+\def\hhatc{{\ensuremath{\hat{c}}}}
+\def\hhatd{{\ensuremath{\hat{d}}}}
+\def\hhate{{\ensuremath{\hat{e}}}}
+\def\hhatf{{\ensuremath{\hat{f}}}}
+\def\hhatg{{\ensuremath{\hat{g}}}}
+\def\hhath{{\ensuremath{\hat{h}}}}
+\def\hhati{{\ensuremath{\hat{i}}}}
+\def\hhatj{{\ensuremath{\hat{j}}}}
+\def\hhatk{{\ensuremath{\hat{k}}}}
+\def\hhatl{{\ensuremath{\hat{l}}}}
+\def\hhatm{{\ensuremath{\hat{m}}}}
+\def\hhatn{{\ensuremath{\hat{n}}}}
+\def\hhato{{\ensuremath{\hat{o}}}}
+\def\hhatp{{\ensuremath{\hat{p}}}}
+\def\hhatq{{\ensuremath{\hat{q}}}}
+\def\hhatr{{\ensuremath{\hat{r}}}}
+\def\hhats{{\ensuremath{\hat{s}}}}
+\def\hhatt{{\ensuremath{\hat{t}}}}
+\def\hhatu{{\ensuremath{\hat{u}}}}
+\def\hhatv{{\ensuremath{\hat{v}}}}
+\def\hhatw{{\ensuremath{\hat{w}}}}
+\def\hhatx{{\ensuremath{\hat{x}}}}
+\def\hhaty{{\ensuremath{\hat{y}}}}
+\def\hhatz{{\ensuremath{\hat{z}}}}
+
+% Hat versions - uppercase
+\def\hhatA{{\ensuremath{\hat{A}}}}
+\def\hhatB{{\ensuremath{\hat{B}}}}
+\def\hhatC{{\ensuremath{\hat{C}}}}
+\def\hhatD{{\ensuremath{\hat{D}}}}
+\def\hhatE{{\ensuremath{\hat{E}}}}
+\def\hhatF{{\ensuremath{\hat{F}}}}
+\def\hhatG{{\ensuremath{\hat{G}}}}
+\def\hhatH{{\ensuremath{\hat{H}}}}
+\def\hhatI{{\ensuremath{\hat{I}}}}
+\def\hhatJ{{\ensuremath{\hat{J}}}}
+\def\hhatK{{\ensuremath{\hat{K}}}}
+\def\hhatL{{\ensuremath{\hat{L}}}}
+\def\hhatM{{\ensuremath{\hat{M}}}}
+\def\hhatN{{\ensuremath{\hat{N}}}}
+\def\hhatO{{\ensuremath{\hat{O}}}}
+\def\hhatP{{\ensuremath{\hat{P}}}}
+\def\hhatQ{{\ensuremath{\hat{Q}}}}
+\def\hhatR{{\ensuremath{\hat{R}}}}
+\def\hhatS{{\ensuremath{\hat{S}}}}
+\def\hhatT{{\ensuremath{\hat{T}}}}
+\def\hhatU{{\ensuremath{\hat{U}}}}
+\def\hhatV{{\ensuremath{\hat{V}}}}
+\def\hhatW{{\ensuremath{\hat{W}}}}
+\def\hhatX{{\ensuremath{\hat{X}}}}
+\def\hhatY{{\ensuremath{\hat{Y}}}}
+\def\hhatZ{{\ensuremath{\hat{Z}}}}
+\def\hhattheta{{\ensuremath{\hat{\theta}}}}
+\def\hhatbeta{{\ensuremath{\hat{\beta}}}}
+\def\hhatalpha{{\ensuremath{\hat{\alpha}}}}
+
+% Tilde versions - lowercase
+\def\tda{{\ensuremath{\tilde{a}}}}
+\def\tdb{{\ensuremath{\tilde{b}}}}
+\def\tdc{{\ensuremath{\tilde{c}}}}
+\def\tdd{{\ensuremath{\tilde{d}}}}
+\def\tde{{\ensuremath{\tilde{e}}}}
+\def\tdf{{\ensuremath{\tilde{f}}}}
+\def\tdg{{\ensuremath{\tilde{g}}}}
+\def\tdh{{\ensuremath{\tilde{h}}}}
+\def\tdi{{\ensuremath{\tilde{i}}}}
+\def\tdj{{\ensuremath{\tilde{j}}}}
+\def\tdk{{\ensuremath{\tilde{k}}}}
+\def\tdl{{\ensuremath{\tilde{l}}}}
+\def\tdm{{\ensuremath{\tilde{m}}}}
+\def\tdn{{\ensuremath{\tilde{n}}}}
+\def\tdo{{\ensuremath{\tilde{o}}}}
+\def\tdp{{\ensuremath{\tilde{p}}}}
+\def\tdq{{\ensuremath{\tilde{q}}}}
+\def\tdr{{\ensuremath{\tilde{r}}}}
+\def\tds{{\ensuremath{\tilde{s}}}}
+\def\tdt{{\ensuremath{\tilde{t}}}}
+\def\tdu{{\ensuremath{\tilde{u}}}}
+\def\tdv{{\ensuremath{\tilde{v}}}}
+\def\tdw{{\ensuremath{\tilde{w}}}}
+\def\tdx{{\ensuremath{\tilde{x}}}}
+\def\tdy{{\ensuremath{\tilde{y}}}}
+\def\tdz{{\ensuremath{\tilde{z}}}}
+
+% Tilde versions - uppercase
+\def\tdA{{\ensuremath{\tilde{A}}}}
+\def\tdB{{\ensuremath{\tilde{B}}}}
+\def\tdC{{\ensuremath{\tilde{C}}}}
+\def\tdD{{\ensuremath{\tilde{D}}}}
+\def\tdE{{\ensuremath{\tilde{E}}}}
+\def\tdF{{\ensuremath{\tilde{F}}}}
+\def\tdG{{\ensuremath{\tilde{G}}}}
+\def\tdH{{\ensuremath{\tilde{H}}}}
+\def\tdI{{\ensuremath{\tilde{I}}}}
+\def\tdJ{{\ensuremath{\tilde{J}}}}
+\def\tdK{{\ensuremath{\tilde{K}}}}
+\def\tdL{{\ensuremath{\tilde{L}}}}
+\def\tdM{{\ensuremath{\tilde{M}}}}
+\def\tdN{{\ensuremath{\tilde{N}}}}
+\def\tdO{{\ensuremath{\tilde{O}}}}
+\def\tdP{{\ensuremath{\tilde{P}}}}
+\def\tdQ{{\ensuremath{\tilde{Q}}}}
+\def\tdR{{\ensuremath{\tilde{R}}}}
+\def\tdS{{\ensuremath{\tilde{S}}}}
+\def\tdT{{\ensuremath{\tilde{T}}}}
+\def\tdU{{\ensuremath{\tilde{U}}}}
+\def\tdV{{\ensuremath{\tilde{V}}}}
+\def\tdW{{\ensuremath{\tilde{W}}}}
+\def\tdX{{\ensuremath{\tilde{X}}}}
+\def\tdY{{\ensuremath{\tilde{Y}}}}
+\def\tdZ{{\ensuremath{\tilde{Z}}}}
+\def\tdtheta{{\ensuremath{\tilde{\theta}}}}
+\def\tdbeta{{\ensuremath{\tilde{\beta}}}}
+\def\tdalpha{{\ensuremath{\tilde{\alpha}}}}
+
+% Tilde Greek
+\def\tdgamma{{\ensuremath{\tilde{\gamma}}}}
+\def\tddelta{{\ensuremath{\tilde{\delta}}}}
+\def\tdepsilon{{\ensuremath{\tilde{\epsilon}}}}
+\def\tdlambda{{\ensuremath{\tilde{\lambda}}}}
+\def\tdmu{{\ensuremath{\tilde{\mu}}}}
+\def\tdphi{{\ensuremath{\tilde{\phi}}}}
+\def\tdsigma{{\ensuremath{\tilde{\sigma}}}}
+
+% Bar versions - lowercase
+\def\bbara{{\ensuremath{\bar{a}}}}
+\def\bbarb{{\ensuremath{\bar{b}}}}
+\def\bbarc{{\ensuremath{\bar{c}}}}
+\def\bbard{{\ensuremath{\bar{d}}}}
+\def\bbare{{\ensuremath{\bar{e}}}}
+\def\bbarf{{\ensuremath{\bar{f}}}}
+\def\bbarg{{\ensuremath{\bar{g}}}}
+\def\bbarh{{\ensuremath{\bar{h}}}}
+\def\bbari{{\ensuremath{\bar{i}}}}
+\def\bbarj{{\ensuremath{\bar{j}}}}
+\def\bbark{{\ensuremath{\bar{k}}}}
+\def\bbarl{{\ensuremath{\bar{l}}}}
+\def\bbarm{{\ensuremath{\bar{m}}}}
+\def\bbarn{{\ensuremath{\bar{n}}}}
+\def\bbaro{{\ensuremath{\bar{o}}}}
+\def\bbarp{{\ensuremath{\bar{p}}}}
+\def\bbarq{{\ensuremath{\bar{q}}}}
+\def\bbarr{{\ensuremath{\bar{r}}}}
+\def\bbars{{\ensuremath{\bar{s}}}}
+\def\bbart{{\ensuremath{\bar{t}}}}
+\def\bbaru{{\ensuremath{\bar{u}}}}
+\def\bbarv{{\ensuremath{\bar{v}}}}
+\def\bbarw{{\ensuremath{\bar{w}}}}
+\def\bbarx{{\ensuremath{\bar{x}}}}
+\def\bbary{{\ensuremath{\bar{y}}}}
+\def\bbarz{{\ensuremath{\bar{z}}}}
+
+% Bar versions - uppercase
+\def\bbarA{{\ensuremath{\bar{A}}}}
+\def\bbarB{{\ensuremath{\bar{B}}}}
+\def\bbarC{{\ensuremath{\bar{C}}}}
+\def\bbarD{{\ensuremath{\bar{D}}}}
+\def\bbarE{{\ensuremath{\bar{E}}}}
+\def\bbarF{{\ensuremath{\bar{F}}}}
+\def\bbarG{{\ensuremath{\bar{G}}}}
+\def\bbarH{{\ensuremath{\bar{H}}}}
+\def\bbarI{{\ensuremath{\bar{I}}}}
+\def\bbarJ{{\ensuremath{\bar{J}}}}
+\def\bbarK{{\ensuremath{\bar{K}}}}
+\def\bbarL{{\ensuremath{\bar{L}}}}
+\def\bbarM{{\ensuremath{\bar{M}}}}
+\def\bbarN{{\ensuremath{\bar{N}}}}
+\def\bbarO{{\ensuremath{\bar{O}}}}
+\def\bbarP{{\ensuremath{\bar{P}}}}
+\def\bbarQ{{\ensuremath{\bar{Q}}}}
+\def\bbarR{{\ensuremath{\bar{R}}}}
+\def\bbarS{{\ensuremath{\bar{S}}}}
+\def\bbarT{{\ensuremath{\bar{T}}}}
+\def\bbarU{{\ensuremath{\bar{U}}}}
+\def\bbarV{{\ensuremath{\bar{V}}}}
+\def\bbarW{{\ensuremath{\bar{W}}}}
+\def\bbarX{{\ensuremath{\bar{X}}}}
+\def\bbarY{{\ensuremath{\bar{Y}}}}
+\def\bbarZ{{\ensuremath{\bar{Z}}}}
+
+% Bar Greek
+\def\bbaralpha{{\ensuremath{\bar{\alpha}}}}
+\def\bbarbeta{{\ensuremath{\bar{\beta}}}}
+\def\bbargamma{{\ensuremath{\bar{\gamma}}}}
+\def\bbardelta{{\ensuremath{\bar{\delta}}}}
+\def\bbarepsilon{{\ensuremath{\bar{\epsilon}}}}
+\def\bbarlambda{{\ensuremath{\bar{\lambda}}}}
+\def\bbarmu{{\ensuremath{\bar{\mu}}}}
+\def\bbarphi{{\ensuremath{\bar{\phi}}}}
+\def\bbarsigma{{\ensuremath{\bar{\sigma}}}}
+\def\bbartheta{{\ensuremath{\bar{\theta}}}}
+
+% Common shortcuts
+\def\eps{{\ensuremath{\epsilon}}}
+\def\lam{{\ensuremath{\lambda}}}
+\def\Lam{{\ensuremath{\Lambda}}}
+\def\bbLam{{\ensuremath{\boldsymbol{\Lambda}}}}
+\def\deltat{{\ensuremath{\triangle t}}}
+
+% Common definitions
+\providecommand{\defQfunction}{Q(u):=(1/\sqrt{2\pi})\int_u^\infty e^{-u^2/2} du}
+\providecommand{\intinfty}{\int_{-\infty}^{\infty}}
+\providecommand{\blog}{{\bf \log}}
+
+% ==========================================
+% VERSION INFO
+% ==========================================
+\typeout{===========================================}
+\typeout{textool v4.0 Robust Edition loaded}
+\typeout{Options: theorems=\if@loadtheorems ON\else OFF (default)\fi, algorithms=\if@loadalgorithms ON\else OFF (default)\fi}
+\typeout{Array package loaded for tabularx compatibility}
+\typeout{For basic use: \string\usepackage{textool}}
+\typeout{With theorems: \string\usepackage[theorems]{textool}}
+\typeout{===========================================}
+
+\makeatother
+
+\endinput
+% End of textool v4.0 Robust Edition
